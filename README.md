@@ -3,13 +3,26 @@
 ### Team Members: Ziyu Wang, Zhaoyu Zhang
 
 ## Table of Contents:
- 1. [Data Cleaning &amp; Pre-processing](#i-data-cleaning--pre-processing)
- 2. [Data Visualization](#ii-data-visualization)
- 3. [Modeling &amp; Analysis](#iii-modeling--analysis)
- 4. [Conclusion](#iv-conclusion)
+ 1. [Introduction](#i-introduction)
+ 2. [Data Cleaning &amp; Pre-processing](#ii-data-cleaning--pre-processing)
+ 3. [Data Visualization](#iii-data-visualization)
+ 4. [Modeling &amp; Analysis](#iv-modeling--analysis)
+ 5. [Conclusion](#v-conclusion)
+
+---
+
+# I. Introduction
+
+In this project, we are trying to use Natural Language Processing to predict the pitch result of businesses in front of seasoned investors (aka sharks) who decide whether or not to invest in the businesses in Shark Tank. We exploited 4 ways to build our model:  
+- CountVector and XGBoost
+- TF-IDF and Decision Tree
+- Random Forest
+- LSTM
+
+And we used permutation testing to generate tests on the accuracy of our models and conclude the most effective model in this scenario.
 
 
-# I. Data Cleaning & Pre-processing:
+# II. Data Cleaning & Pre-processing:
 
 * **NLP Visualizations**: To visualize the questions in this dataset, we cleaned the data by only keeping each valid english letter. Since this section of our analysis was done on the natural language in the dataset we only needed these 2 fields for all companies in our dataset to build a corpus.
 
@@ -17,82 +30,73 @@
 
 * **Cleaning and Pro-processing**: The dataset is relatvely clean and tidy. There does not exist missingness or abnormals. We decided to replace invalid characters and use regular tense of the word to keep track of the frequency. Furthermore, we did not discard or focus on any of the description since we found the ```Business_Identifier``` are chose randomly, which has little impact on classification. After understanding the data, we noticed that data comes from the TV show Shark Tank which started broadcasting in 2009, so it's appropriate to ignore geographic/spatial/time bias.
 
-# II. Data Visualization:
+# III. Data Visualization:
 * **Tableau Dashboard Links**:
-  * ![Word Cloud](https://user-images.githubusercontent.com/57332517/162641707-9b9a8f4a-9246-485a-bf2a-3729f7e340cd.png)
+  * [Word Cloud](https://user-images.githubusercontent.com/57332517/162641839-645f481a-273a-4a13-8db1-00d479cf2bb8.png)
 
-  * [T-SNE Projections(Cumulative)](https://public.tableau.com/profile/ayush.more#!/vizhome/T-SNEPROJECTIONSCumulative/Dashboard2)
-  * [T-SNE Projections of TF-IDF Features](https://public.tableau.com/profile/ayush.more#!/vizhome/TF-IDFT-SNEPROJECTIONS/T-SNETF-IDF)
-  * [T-SNE Projections of GloVe Embeddings](https://public.tableau.com/profile/ayush.more#!/vizhome/GloVeT-SNEPROJECTIONS/T-SNEGloVe)
-  * [T-SNE Projections of Word2Vec Embeddings](https://public.tableau.com/profile/ayush.more#!/vizhome/Word2vecT-SNEPROJECTIONS/T-SNEWord2vec)
+  * [Description Length](https://user-images.githubusercontent.com/57332517/162641828-d731fec9-8caa-4409-bf25-f631c1d0c38b.png)
 
-* Tips for using the dashboards:
-  * Hover over points to see what survey questions and topics they correspond to
+  * [Word Frequency Distibution](https://user-images.githubusercontent.com/57332517/162641802-f0d650e4-d798-49aa-bf31-3abd8a09027b.png)
 
-  * Select topics on the scatter plots to highlight points belonging to that topic
-    * Observe how our methods were able to capture the similarity of the natural language used in survey questions regarding cancer or nutrition questions specifically about high school students
 
-  * Select different topics to see the corresponding word clouds
+* **Methodology**: The first step towards achieving these visualizations was to extract meaningful features from the text. We use Term Frequency-Inverse Document Frequency(TF-IDF). We used the sklearn module to create a sparse TF-IDF matrix for our corpus.
 
-  ![T-SNE plot](plots/T-SNE%20TF-IDF.png)
+We tried the reduction algorithms in the sklearn module: Principal Component Analysis(PCA), Singular Value Decomposition(SVD). It was difficult to see any logical divisions or clusterings when visualizing these methods.
 
-  ![Word cloud](plots/Nutrition%20Word%20Cloud.png)
+# IV. Modeling & Analysis:
 
-* **Methodology**: To visualize the natural language content of this dataset’s survey questions, we wanted to apply transformations to these questions to project them onto a 2-dimensional space. The first step towards achieving these visualizations was to extract meaningful features from the text to turn our unstructured text into structured data. We used 3 methods for this: Global Vectors for Word Representation(GloVe), Word2Vec embeddings, and Term Frequency-Inverse Document Frequency(TF-IDF). We used the SpaCy module to convert each word into a 300-dimensional word2vec embedding. We then downloaded pre-trained GloVe embeddings and loaded them into python as a dictionary that would convert each word into a 300-dimensional numpy vector. For both of these methods, we simply took the mean of each word’s embedding in a survey question to produce a 300-dimensional embedding that represents the content of that question. We also used the sklearn module to create a sparse TF-IDF matrix for our corpus.
+* **LSTM**: At first we thought it will be effective since we know LSTM is very good at filtering spam emails which is a similar classification problem. But after the implementation, we found that it's hard for us to embed an appropriate word vector in a shout period of time. This potentially caused our training set accuracy was over 70% while our test set accuracy was < 55%. We tried to change parameters since we applied skleanr.keras.sequential package.We tried to limit the word length and the random state, the improvement was little. We also changed dropout on our LSTM cell so that our model learns not to rely too heavily on certain features of the cell states from previous timesteps and the word embeddings. 
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Once we had these 3 different methods of extracting structured data from our corpus, we needed to visualize them and we cannot achieve that if our data is in 300 dimensions or in a sparse TF-IDF matrix. To transform this high dimensional data into 2-dimensional data we decided to explore unsupervised machine learning approaches. We tried the following dimension reduction algorithms in the sklearn module: Principal Component Analysis(PCA), Negative Matrix Factorization(NMF), Singular Value Decomposition(SVD) and T-distributed Stochastic Neighbor Embedding(T-SNE). When visualizing most of these methods it was difficult to see any logical divisions or clusterings of the questions by topic, except for when we applied T-SNE. In our T-SNE plots, we could clearly see how our feature extraction methods were able to capture the similarity in content for questions of the same topic and content. We then saved this 2-dimensional data as CSV files to be imported into Tableau for creating the dashboards we have linked above.
+* **CountVector and XGBoost**: This is a straightforward model since we applied the built-in package of CountVectorizer which quantify every word into a matrix that counts the appearance. We found that in our permutation test, the performance will be worse when we include stop-words in English to exclude useless meanings. Unsure about whether it will help to improve accuracy in test data.
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;While working on the 2d scatter plots described above, we noticed that we could extract words from our TF-IDF matrix with the highest weights for each processed question. From this, we thought about visualizing our TF-IDF processing using bar plots or pie charts for each word’s relevance to a question and/or topic. Eventually, we came up with the idea of creating a word cloud using Tableau. To do this, we created and applied a function to our data frame to extract keywords and their corresponding TF-IDF weights from each question. After this, we grouped the dataframe by topic and applied a function to sum up the TF-IDF scores for each word. Finally, we exported the questions, topics, keywords, and scores to a CSV file to create the word cloud dashboard in Tableau.
+* **TF-IDF, Decision Tree**: We create TF-IDF model which compare 1-gram and 2-gram as follows:
+```
+def KNN_TFIDF():
+    # x, y
+    x_train, x_test, y_train, y_test = train_test_split(dff['Des'], dff['Status'],\
+         test_size = 0.2, random_state = 50)
+    # TF-IDF
+    vect      = TfidfVectorizer(min_df = 5, max_df = 0.7, \
+        sublinear_tf = True, use_idf = True)
+    train_vect= vect.fit_transform(x_train)
+    test_vect = vect.transform(x_test)
+    
+    for k in [1,2]: # 1-gram, 2-gram
+        model = KNeighborsClassifier(n_neighbors = k)
+        model.fit(train_vect, y_train)
 
-# III. Modeling & Analysis:
-* **LSTM Classification**: Originally we planned on only classifying the survey questions by applying the unsupervised KMeans clustering algorithm to the dimensionally reduced data. After trying an exhaustive grid search for this method, we decided to stop pursuing this approach. Our inertia values were too large and we could not achieve a homogeneity score over 50% on the clustering task. We believe this mostly due to a combination of class imbalance, which makes it harder for KMeans to identify topics with few questions as distinct clusters, and a lack of training data.
+        predicted = model.predict(test_vect)
+        accuracy  = model.score(train_vect, y_train)
+        report = classification_report(y_test, predicted, output_dict=True)
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;After this, we decided to create a recurrent deep learning model to process each question and classify it by topic. We chose a Long Short-Term Memory(LSTM) model with a dense layer using the softmax activation function. We chose the LSTM over the traditional RNN because it is less prone to the vanishing and exploding gradient problems due to the more sophisticated gate calculations. We also used the Tensorflow embedding layer so that our model could convert the index representation of our input question to our own custom 100-dimensional word embeddings which are learned through the training process.
+        print("Classification for k = {} is:".format(k))
+        print('Test-set Accuracy:', accuracy_score(y_test, predicted))
+        print('\n')
+```
 
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;After training our model for the first time, we noticed that the model was drastically overfitting to our training set. Our training set accuracy was exactly 100% while our test set accuracy was <60%. To solve this issue, we implemented a variety of techniques. The first thing we did was implement L2 regularization on the softmax dense layer. L2 regularization penalizes larger weights during the training process and because of this our model did not learn to improperly skew the softmax probability distribution that our model outputs. After that, we also applied dropout on our LSTM cell so that our model learns not to rely too heavily on certain features of the cell states from previous timesteps and the word embeddings. To collect further data, we wrote a custom Tensorflow callback that would evaluate our model on the test set after each epoch and store them in a list. This allowed us to then plot the training accuracies and test accuracies as the model was training.
+* **Random Forest**: We applied random forest to vectorize the words and use a step-increasing threshold to check the highest classification line, which turns out to be around 0.6-0.63. We do believe random forest classification would perform well in a bigger size of data, and this counts as the reason for our choice of TF-IDF in the end.
+```
+Threshold 0.2 -- score 0.77
+Threshold 0.25 -- score 0.87
+Threshold 0.3 -- score 0.9
+Threshold 0.35 -- score 0.93
+Threshold 0.4 -- score 0.94
+Threshold 0.45 -- score 0.94
+Threshold 0.5 -- score 0.95
+Threshold 0.55 -- score 0.95
+Threshold 0.6 -- score 0.95
+Threshold 0.65 -- score 0.95
+Threshold 0.7 -- score 0.95
+Threshold 0.75 -- score 0.91
+---Optimum Threshold --- 0.6 --ROC-- 0.95
+```
 
-  ![Loss plot](plots/LSTM_accuracy.png)
+Overall, three of our models generate similar performance which is not clear from our permutation test. We tried to optimize the outcomes but the difference is still tiny.
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;After seeing this plot, we decided to extend the functionality of this custom callback, by storing the maximum test accuracy achieved during and the corresponding weights that achieved that performance. As you can see below, our callback was able to successfully save the best parameters.
+# V. Conclusion:
 
-  ![Evaluation](plots/LSTM_evaluation.png)
+Among all methods, TF-IDF and decision tree has the best performance, with accuracy approximately 65% in our own permutation testing.  That might be due to the logic of decision if best suitable in determination of pitch, investors will consider the paramters based on the previous parameters exposed by the business. We are unsure about the performance for test data since three models have a similar performance in our permutation test.
 
-* **Permutation Testing**: We conducted four permutation tests related to states with strong policies on retail licenses for tobacco and states with strong tobacco control and prevention laws to see the effects of these two measures on the proportion of youth that smokes cigarettes and the proportion of youth that uses smokeless tobacco. Listed below are the null hypotheses for our tests:
+Future Improvements
 
-  1. States with strict policies that require retail license laws to sell tobacco have the same proportion of current underage smokeless tobacco users as those states without the strong policies.
-
-  2. States with strict policies that require retail license laws to sell tobacco have the same proportion of current underage cigarette users as those states without the strong policies.
-
-  3. States that allow stronger local tobacco control and prevention laws have the same proportion of current underage smokeless tobacco users as those states without the stronger control and laws.
-
-  4. States that allow stronger local tobacco control and prevention laws have the same proportion of current underage cigarette users as those states without the stronger control and laws
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The test statistic we measured was the difference in the mean proportion between “No” and “Yes”. For instance, if the null hypothesis we were testing was on stronger tobacco control and the current underage cigarette user, then our test statistic would be the difference of proportion of youth cigarette users in states that do not have strong tobacco control and the proportion of youth cigarette users in states that do have a strong tobacco control. In order to test this statistic, we shuffled the columns of qualitative variables (tobacco control, retail license policies) amongst the proportions and calculated the mean proportion of the quantitative variable (cigarette users, smokeless tobacco users). We then repeated this simulation 1000 times and plotted the distribution of the mean proportions from shuffling and compared it to our observed population test statistic. Listed below is a visualization created using matplotlib for the null hypothesis: *States with strict policies that require retail license laws to sell tobacco have the same proportion of current underage smokeless tobacco users as those states without the strong policies*.
-
-  ![Hypothesis 1](plots/null_hypothesis_1.png)
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Our observed population test statistic was 0.176, which was obtained from the difference of mean proportions from states without strong policies and states with strong policies relative to underage smokeless tobacco users. Given the distribution of the 1000 simulations, we observed that 43.4% of the simulated shuffled mean proportions were above our observed population test statistic. This also represents our p-value, and because it is not significant (we define our significance level at 5%), we conclude that we fail to reject the null hypothesis. Below are the distributions for the other null hypotheses and the p-value associated with it:
-
-  2. States with strict policies that require retail license laws to sell tobacco have the same proportion of current underage cigarette users as those states without the strong policies.
-    * P-Value: 0.430
-
-    ![Hypothesis 2](plots/null_hypothesis_2.png)
-
-  3. States that allow stronger local tobacco control and prevention laws have the same proportion of current underage smokeless tobacco users as those states without the stronger control and laws.
-    * P-Value: 0.363
-
-    ![Hypothesis 3](plots/null_hypothesis_3.png)
-
-  4. States that allow stronger local tobacco control and prevention laws have the same proportion of current underage cigarette users as those states without the stronger control and laws
-    * P-Value: 0.154
-
-    ![Hypothesis 4](plots/null_hypothesis_4.png)
-
-    By defining our significance level at 5%, we fail to reject all four of our null hypotheses.
-
-# IV. Conclusion:
-* **LSTM Classification**: There were only 203 unique questions we could classify from this dataset. While our model performed well on the data given to us, we had an extremely limited training set, especially after splitting it into a test set as well. Due to this limitation if our model is tested on data outside of this dataset we might not perform nearly as well due to overfitting. Upon further inspection, the reason our model made wrong predictions on our test set, was that certain questions in our test set had words that our model never encountered during training. Due to this our model never learned an embedding representation for some words in the vocab. Due to this problem, our model would further struggle on questions that include words that are outside of the model’s trained vocabulary. If we had further time as well, we would have used the custom word embeddings we trained with our LSTM model to create another visualization of our corpus in Tableau.
-
-* **Permutation Testing**: After conducting our four permutation tests via shuffling the qualitative variables (yes/no) against the quantitative variables (proportions), we failed to reject all four of the null hypotheses. Although we failed to reject the null hypotheses, we cannot confirm that they are true. The tests we conducted failed to reject the null hypothesis, but this does not mean that other tests fail to reject the same null hypotheses. While conducting these permutation tests, we made the assumption that states with a stricter policy on tobacco licenses/strong tobacco prevention control and laws would correlate to the decreased proportion of cigarette youth smokers and smokeless tobacco users. We could improve our tests by gathering more data on the states that did not participate in this survey to capture a more holistic view of the nation.
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Furthermore, it would also be helpful to understand the types of areas these surveys were conducted within the states, such as rural/suburban/urban areas because the lifestyles between these places vary and thus could influence an individual’s choice to use tobacco. The data that we worked with only specified the state and did not reveal the exact location or county that these surveys were conducted, which would qualify the representation of the state from the surveys (ex. Bakersfield is not a full representation of California). Additionally, we worked with survey data from 2015, which predated the advent of smokeless tobacco devices such as JUULs. We would expect the proportion of current (2019/2020) cigarette youth smokers to decrease in exchange for a significantly larger increase in smokeless tobacco youth users because of the accessibility and advertisements of these devices as safer alternatives to smoking. Additionally, in response to these new devices, we would also expect more states to incorporate stricter policies on the retail license on tobacco products and enforce stronger tobacco prevention laws due to the popularity and unawareness of the harmful health effects from the devices. This would influence our 
+Our model is pretty inaccurate because we meaured all the businesses in the same way, based on the tokens in their descriptions. However, in real life, investors  are likely to measure businesses with respect to the genres of the products. It might be helpful that we can identify certain keywords in the description to catagorize businesses and then use different datasets to train different models.
